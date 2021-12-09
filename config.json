@@ -1,0 +1,45 @@
+{
+    "kafka_url": "kafka:9092",
+    "group_id": "service_topic_worker",
+    "device_type_topic": "device-types",
+
+    "kafka_consumer_max_wait": "100ms",
+    "kafka_consumer_min_bytes": 1000,
+    "kafka_consumer_max_bytes": 1000000,
+    "debug": true,
+
+    "kafka_topic_configs": {
+        "urn_infai_ses_service_": [
+            {
+                "ConfigName":  "retention.ms",
+                "ConfigValue": "31536000000"
+            }
+        ],
+        "device-types": [
+            {
+                "ConfigName":  "retention.ms",
+                "ConfigValue": "-1"
+            },
+            {
+                "ConfigName":  "retention.bytes",
+                "ConfigValue": "-1"
+            },
+            {
+                "ConfigName":  "cleanup.policy",
+                "ConfigValue": "compact"
+            },
+            {
+                "ConfigName":  "delete.retention.ms",
+                "ConfigValue": "86400000"
+            },
+            {
+                "ConfigName":  "segment.ms",
+                "ConfigValue": "604800000"
+            },
+            {
+                "ConfigName":  "min.cleanable.dirty.ratio",
+                "ConfigValue": "0.1"
+            }
+        ]
+    }
+}

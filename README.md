@@ -1,0 +1,1 @@
+consumes device types and creates a kafka topic for each service
