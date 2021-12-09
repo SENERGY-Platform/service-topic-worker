@@ -44,7 +44,9 @@ func Start(ctx context.Context, config configuration.Config) error {
 func HandleDeviceTypePut(config configuration.Config, deviceType DeviceType) error {
 	topics := []string{}
 	for _, service := range deviceType.Services {
-		topics = append(topics, ServiceIdToTopic(service.Id))
+		topic := ServiceIdToTopic(service.Id)
+		log.Println("create service topic", topic)
+		topics = append(topics, topic)
 	}
 	return InitTopic(config.KafkaUrl, config.KafkaTopicConfigs, topics...)
 }
