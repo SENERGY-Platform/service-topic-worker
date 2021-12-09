@@ -31,7 +31,6 @@ func getBroker(bootstrapUrl string) (result []string, err error) {
 	return result, nil
 }
 
-
 type ConsumerConfig struct {
 	KafkaUrl       string
 	GroupId        string
@@ -82,25 +81,16 @@ func NewConsumer(ctx context.Context, config ConsumerConfig, listener func(topic
 					errorhandler(err)
 					return
 				}
-				if time.Now().Sub(m.Time) > 1*time.Hour { //floodgate to prevent old messages to DOS the consumer
-					log.Println("WARNING: kafka message older than 1h: ", config.Topic, time.Now().Sub(m.Time))
+
+				err = listener(m.Topic, m.Value, m.Time)
+				if err != nil {
+					log.Println("ERROR: unable to handle message (no commit)", err, m.Topic, string(m.Value))
+				} else {
 					err = r.CommitMessages(ctx, m)
 					if err != nil {
 						log.Println("ERROR: while committing message ", config.Topic, err)
 						errorhandler(err)
 						return
-					}
-				} else {
-					err = listener(m.Topic, m.Value, m.Time)
-					if err != nil {
-						log.Println("ERROR: unable to handle message (no commit)", err, m.Topic, string(m.Value))
-					} else {
-						err = r.CommitMessages(ctx, m)
-						if err != nil {
-							log.Println("ERROR: while committing message ", config.Topic, err)
-							errorhandler(err)
-							return
-						}
 					}
 				}
 			}
