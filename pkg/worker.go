@@ -34,6 +34,8 @@ func Start(ctx context.Context, config configuration.Config) error {
 			return HandleDeviceTypePut(config, command.DeviceType)
 		case "DELETE":
 			return nil
+		case "RIGHTS":
+			return nil
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, func(err error) {
