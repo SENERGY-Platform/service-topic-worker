@@ -1,11 +1,12 @@
 module github.com/SENERGY-Platform/service-topic-worker
 
-go 1.18
+go 1.21
 
-require github.com/segmentio/kafka-go v0.4.25
+toolchain go1.21.0
+
+require github.com/segmentio/kafka-go v0.4.42
 
 require (
-	github.com/golang/snappy v0.0.1 // indirect
-	github.com/klauspost/compress v1.9.8 // indirect
-	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
+	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 )
