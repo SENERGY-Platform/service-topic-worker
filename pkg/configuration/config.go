@@ -37,9 +37,10 @@ type Config struct {
 	KafkaConsumerMaxBytes int64                          `json:"kafka_consumer_max_bytes"`
 	Debug                 bool                           `json:"debug"`
 	KafkaTopicConfigs     map[string][]kafka.ConfigEntry `json:"kafka_topic_configs"`
+	InitDeviceTypesTopics bool                           `json:"init_device_types_topics"`
 }
 
-//loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
+// loads config from json in location and used environment variables (e.g ZookeeperUrl --> ZOOKEEPER_URL)
 func Load(location string) (config Config, err error) {
 	file, err := os.Open(location)
 	if err != nil {

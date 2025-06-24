@@ -8,6 +8,8 @@
     "kafka_consumer_max_bytes": 1000000,
     "debug": true,
 
+    "init_device_types_topics": false,
+
     "kafka_topic_configs": {
         "urn_infai_ses_service_": [
             {

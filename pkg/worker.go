@@ -23,6 +23,7 @@ func Start(ctx context.Context, config configuration.Config) error {
 		MaxBytes:       int(config.KafkaConsumerMaxBytes),
 		MaxWait:        maxWait,
 		TopicConfigMap: config.KafkaTopicConfigs,
+		InitTopic:      config.InitDeviceTypesTopics,
 	}, func(topic string, msg []byte, time time.Time) error {
 		command := DeviceTypeCommand{}
 		err = json.Unmarshal(msg, &command)
