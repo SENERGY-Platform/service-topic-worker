@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/SENERGY-Platform/service-topic-worker/pkg/configuration"
 	"log"
+	"log/slog"
 	"strings"
 	"time"
+
+	"github.com/SENERGY-Platform/service-topic-worker/pkg/configuration"
 )
 
 func Start(ctx context.Context, config configuration.Config) error {
@@ -40,6 +42,7 @@ func Start(ctx context.Context, config configuration.Config) error {
 		}
 		return errors.New("unable to handle command: " + string(msg))
 	}, func(err error) {
+		slog.Error("FATAL: kafka consumer error", "error", err)
 		log.Fatalln("FATAL-ERROR: kafka consumer", err)
 	})
 }
@@ -48,7 +51,7 @@ func HandleDeviceTypePut(config configuration.Config, deviceType DeviceType) err
 	topics := []string{}
 	for _, service := range deviceType.Services {
 		topic := ServiceIdToTopic(service.Id)
-		log.Println("create service topic", topic)
+		slog.Info("create service topic", "topic", topic)
 		topics = append(topics, topic)
 	}
 	return InitTopic(config.KafkaUrl, config.KafkaTopicConfigs, topics...)

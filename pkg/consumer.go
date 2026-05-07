@@ -3,13 +3,15 @@ package pkg
 import (
 	"context"
 	"errors"
-	"github.com/segmentio/kafka-go"
 	"io"
 	"io/ioutil"
 	"log"
+	"log/slog"
 	"net"
 	"strconv"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
 func GetBroker(bootstrapUrl string) (brokers []string, err error) {
@@ -44,16 +46,16 @@ type ConsumerConfig struct {
 }
 
 func NewConsumer(ctx context.Context, config ConsumerConfig, listener func(topic string, msg []byte, time time.Time) error, errorhandler func(err error)) (err error) {
-	log.Println("DEBUG: consume topic: \"" + config.Topic + "\"")
+	slog.Debug("consume", "topic", config.Topic)
 	broker, err := GetBroker(config.KafkaUrl)
 	if err != nil {
-		log.Println("ERROR: unable to get broker list", err)
+		slog.Error("unable to get broker list", "error", err)
 		return err
 	}
 	if config.InitTopic {
 		err = InitTopic(config.KafkaUrl, config.TopicConfigMap, config.Topic)
 		if err != nil {
-			log.Println("ERROR: unable to create topic", err)
+			slog.Error("unable to create topic", "error", err)
 			return err
 		}
 	}
@@ -70,18 +72,18 @@ func NewConsumer(ctx context.Context, config ConsumerConfig, listener func(topic
 	})
 	go func() {
 		defer r.Close()
-		defer log.Println("close consumer for topic ", config.Topic)
+		defer slog.Debug("consumer closed", "topic", config.Topic)
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			default:
 				m, err := r.FetchMessage(ctx)
-				if err == io.EOF || err == context.Canceled {
+				if errors.Is(err, io.EOF) || errors.Is(err, context.Canceled) {
 					return
 				}
 				if err != nil {
-					log.Println("ERROR: while consuming topic ", config.Topic, err)
+					slog.Error("unable to consume topic", "topic", config.Topic, "error", err)
 					errorhandler(err)
 					return
 				}
@@ -93,7 +95,7 @@ func NewConsumer(ctx context.Context, config ConsumerConfig, listener func(topic
 				}, 10*time.Minute)
 
 				if err != nil {
-					log.Println("ERROR: unable to handle message (no commit)", err)
+					slog.Error("unable to handle message (no commit)", "topic", config.Topic, "error", err)
 					errorhandler(err)
 				} else {
 					err = r.CommitMessages(ctx, m)
@@ -110,10 +112,10 @@ func retry(f func() error, waitProvider func(n int64) time.Duration, timeout tim
 	for i := int64(1); err != nil && time.Since(start) < timeout; i++ {
 		err = f()
 		if err != nil {
-			log.Println("ERROR: kafka listener error:", err)
+			slog.Error("kafka listener error", "error", err)
 			wait := waitProvider(i)
 			if time.Since(start)+wait < timeout {
-				log.Println("ERROR: retry after:", wait.String())
+				slog.Error("retry after", "wait", wait.String())
 				time.Sleep(wait)
 			} else {
 				return err

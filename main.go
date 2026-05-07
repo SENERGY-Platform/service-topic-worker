@@ -19,12 +19,13 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/SENERGY-Platform/service-topic-worker/pkg"
-	"github.com/SENERGY-Platform/service-topic-worker/pkg/configuration"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/SENERGY-Platform/service-topic-worker/pkg"
+	"github.com/SENERGY-Platform/service-topic-worker/pkg/configuration"
 )
 
 func main() {
@@ -40,12 +41,13 @@ func main() {
 
 	err = pkg.Start(ctx, conf)
 	if err != nil {
+		conf.GetLogger().Error("FATAL: unable to start service", "error", err)
 		log.Fatal(err)
 	}
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 	sig := <-shutdown
-	log.Println("received shutdown signal", sig)
+	conf.GetLogger().Info("received shutdown signal", "signal", sig)
 	cancel()
 }
