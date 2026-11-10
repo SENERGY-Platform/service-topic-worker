@@ -45,6 +45,12 @@ type Config struct {
 	KafkaTopicConfigs     map[string][]kafka.ConfigEntry `json:"kafka_topic_configs"`
 	InitDeviceTypesTopics bool                           `json:"init_device_types_topics"`
 
+	// Layout of the service topics; values below 1 count as 1. An empty retention keeps
+	// the retention.ms of kafka_topic_configs.
+	ServiceTopicPartitions        int64  `json:"service_topic_partitions"`
+	ServiceTopicReplicationFactor int64  `json:"service_topic_replication_factor"`
+	ServiceTopicRetentionMs       string `json:"service_topic_retention_ms"`
+
 	LogLevel string       `json:"log_level"`
 	logger   *slog.Logger `json:"-"`
 }

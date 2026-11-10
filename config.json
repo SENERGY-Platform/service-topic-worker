@@ -10,6 +10,10 @@
 
     "init_device_types_topics": false,
 
+    "service_topic_partitions": 1,
+    "service_topic_replication_factor": 1,
+    "service_topic_retention_ms": "",
+
     "kafka_topic_configs": {
         "urn_infai_ses_service_": [
             {

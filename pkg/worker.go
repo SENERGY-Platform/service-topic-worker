@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/SENERGY-Platform/service-topic-worker/pkg/configuration"
+	"github.com/segmentio/kafka-go"
 )
 
 func Start(ctx context.Context, config configuration.Config) error {
@@ -54,7 +55,32 @@ func HandleDeviceTypePut(config configuration.Config, deviceType DeviceType) err
 		slog.Info("create service topic", "topic", topic)
 		topics = append(topics, topic)
 	}
-	return InitTopic(config.KafkaUrl, config.KafkaTopicConfigs, topics...)
+	return CreateTopics(config.KafkaUrl, ServiceTopicConfigs(config, topics...)...)
+}
+
+func ServiceTopicConfigs(config configuration.Config, topics ...string) []kafka.TopicConfig {
+	partitions := max(int(config.ServiceTopicPartitions), 1)
+	replicationFactor := max(int(config.ServiceTopicReplicationFactor), 1)
+	result := []kafka.TopicConfig{}
+	for _, topic := range topics {
+		entries := []kafka.ConfigEntry{}
+		for _, entry := range GetTopicConfig(config.KafkaTopicConfigs, topic) {
+			if config.ServiceTopicRetentionMs != "" && entry.ConfigName == "retention.ms" {
+				continue
+			}
+			entries = append(entries, entry)
+		}
+		if config.ServiceTopicRetentionMs != "" {
+			entries = append(entries, kafka.ConfigEntry{ConfigName: "retention.ms", ConfigValue: config.ServiceTopicRetentionMs})
+		}
+		result = append(result, kafka.TopicConfig{
+			Topic:             topic,
+			NumPartitions:     partitions,
+			ReplicationFactor: replicationFactor,
+			ConfigEntries:     entries,
+		})
+	}
+	return result
 }
 
 type DeviceTypeCommand struct {

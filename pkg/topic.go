@@ -12,6 +12,19 @@ func InitTopic(kafkaUrl string, configMap map[string][]kafka.ConfigEntry, topics
 }
 
 func InitTopicWithConfig(bootstrapUrl string, configMap map[string][]kafka.ConfigEntry, numPartitions int, replicationFactor int, topics ...string) (err error) {
+	topicConfigs := []kafka.TopicConfig{}
+	for _, topic := range topics {
+		topicConfigs = append(topicConfigs, kafka.TopicConfig{
+			Topic:             topic,
+			NumPartitions:     numPartitions,
+			ReplicationFactor: replicationFactor,
+			ConfigEntries:     GetTopicConfig(configMap, topic),
+		})
+	}
+	return CreateTopics(bootstrapUrl, topicConfigs...)
+}
+
+func CreateTopics(bootstrapUrl string, topicConfigs ...kafka.TopicConfig) (err error) {
 	conn, err := kafka.Dial("tcp", bootstrapUrl)
 	if err != nil {
 		return err
@@ -28,17 +41,6 @@ func InitTopicWithConfig(bootstrapUrl string, configMap map[string][]kafka.Confi
 		return err
 	}
 	defer controllerConn.Close()
-
-	topicConfigs := []kafka.TopicConfig{}
-
-	for _, topic := range topics {
-		topicConfigs = append(topicConfigs, kafka.TopicConfig{
-			Topic:             topic,
-			NumPartitions:     numPartitions,
-			ReplicationFactor: replicationFactor,
-			ConfigEntries:     GetTopicConfig(configMap, topic),
-		})
-	}
 	return controllerConn.CreateTopics(topicConfigs...)
 }
 
